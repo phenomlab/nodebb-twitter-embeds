@@ -24,7 +24,17 @@ function embedTweets() {
     const externalTweetUrlRegex = /https?:\/\/x\.com\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)(?:\?[^\s]*)?/g;
 
     // Get the content of the body or a specific element
-    let content = $('[component="topic"]').html();
+    let contentElement = $('[component="topic"]');
+    if (!contentElement.length) {
+        console.error('Content element not found.');
+        return;
+    }
+
+    let content = contentElement.html();
+    if (content === undefined) {
+        console.error('Content is undefined.');
+        return;
+    }
 
     // Replace tweet URLs within <a> tags with a placeholder div
     content = content.replace(tweetUrlRegex, function(match, url, p1, p2, p3) {
@@ -37,7 +47,7 @@ function embedTweets() {
     content = content.replace(externalTweetUrlRegex, '');
 
     // Update the content
-    $('[component="topic"]').html(content);
+    contentElement.html(content);
 
     // Embed the tweets
     $(".tweet-placeholder").each(function() {
