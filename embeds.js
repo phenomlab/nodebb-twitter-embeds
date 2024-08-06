@@ -40,7 +40,7 @@ function embedTweets() {
     content = content.replace(tweetUrlRegex, function(match, url, p1, p2, p3) {
         // Extract tweet ID
         const tweetId = p3;
-        return `<div data-tweet-id="${tweetId}" class="tweet-placeholder"></div>`;
+        return `<div data-tweet-id="${tweetId}" class="tweet-placeholder" data-processed="false"></div>`;
     });
 
     // Remove URLs outside of <a> tags
@@ -50,8 +50,10 @@ function embedTweets() {
     contentElement.html(content);
 
     // Embed the tweets
-    $(".tweet-placeholder").each(function() {
+    $(".tweet-placeholder[data-processed='false']").each(function() {
         const tweetId = $(this).data("tweet-id");
+        const placeholder = $(this);
+
         // Create a tweet widget
         twttr.widgets.createTweet(
             tweetId,
@@ -65,6 +67,7 @@ function embedTweets() {
             }
         ).then(function() {
             console.log('Tweet ID ' + tweetId + ' embedded successfully');
+            placeholder.attr("data-processed", "true");
         }).catch(function(error) {
             console.error('Error embedding tweet ID ' + tweetId, error);
         });
@@ -72,7 +75,7 @@ function embedTweets() {
 }
 
 // Attach the function to relevant events
-$(window).on('action:ajaxify.end action:posts.loaded action:chat.loaded', function(data) {
+$(window).on('action:ajaxify.end action:posts.loaded action:posts.edited action:chat.loaded', function(data) {
     // Load Twitter script and then embed tweets
     loadTwitterScript(embedTweets);
 });
