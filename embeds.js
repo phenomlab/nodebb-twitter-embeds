@@ -74,8 +74,50 @@ function embedTweets() {
     });
 }
 
+    // Function to update URLs and replace <em> tags
+    function updateTwitterLinks() {
+        $('li[component="post"] p').each(function() {
+            // Find <a> and <em> within each <p> element
+            const link = $(this).find('a');
+            const usernameEm = $(this).find('em');
+
+            // Check if both the link and <em> exist
+            if (link.length && usernameEm.length) {
+                // Get the original URL and username
+                const originalUrl = link.attr('href');
+                const username = usernameEm.text().replace(/_/g, '\\_'); // Escape underscores in the username
+
+                // Get the text content after the <em> tag
+                const textAfterEm = $(this).text().trim();
+                const tweetIdMatch = textAfterEm.match(/status\/(\d+)/);
+
+                if (tweetIdMatch) {
+                    const tweetId = tweetIdMatch[1]; // Get the tweet ID
+
+                    // Create the new URL
+                    const newUrl = `https://x.com/${username}/status/${tweetId}`;
+
+                    // Update the link's href and text
+                    link.attr('href', newUrl);
+                    link.text(newUrl); // Change the visible text of the link as well
+
+                    // Replace <em> with underscores
+                    usernameEm.replaceWith(`_${username}_`);
+
+                    // Remove the original URL text
+                    $(this).contents().filter(function() {
+                        return this.nodeType === Node.TEXT_NODE; // Only keep text nodes
+                    }).remove(); // Remove original text
+                } else {
+                    console.error('No tweet ID found in the text after <em>:', textAfterEm);
+                }
+            }
+        });
+    }
+
 // Attach the function to relevant events
 $(window).on('action:ajaxify.end action:posts.loaded action:posts.edited action:chat.loaded', function(data) {
     // Load Twitter script and then embed tweets
+    updateTwitterLinks();
     loadTwitterScript(embedTweets);
 });
